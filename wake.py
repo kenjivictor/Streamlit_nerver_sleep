@@ -31,7 +31,7 @@ with sync_playwright() as p:
     page = browser.new_page()
 
     for url in SITES:
-        print(f"\n➡️ Opening {url}")
+        print(f"\n Opening {url}")
 
         try:
             page.goto(url, wait_until="domcontentloaded", timeout=180_000)
