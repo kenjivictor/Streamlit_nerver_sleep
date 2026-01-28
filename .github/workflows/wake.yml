@@ -2,13 +2,18 @@ name: Wake Streamlit Apps
 
 on:
   schedule:
+    # été (mars -> octobre) : 10h Paris = 08h UTC
     - cron: "0 8 * 3-10 *"
+
+    # hiver (novembre -> février) : 10h Paris = 09h UTC
     - cron: "0 9 * 11,12,1,2 *"
   workflow_dispatch:
 
 jobs:
   wake:
     runs-on: ubuntu-latest
+    env:
+      PLAYWRIGHT_BROWSERS_PATH: 0
 
     steps:
       - name: Checkout repository
@@ -21,12 +26,11 @@ jobs:
 
       - name: Install dependencies
         run: |
-          pip install playwright
-          playwright install --with-deps chromium
-        
-        env:
-          PLAYWRIGHT_BROWSERS_PATH: 0
+          python -m pip install --upgrade pip
+          python -m pip install playwright
+          python -m playwright install --with-deps chromium
 
       - name: Run wake script
         run: |
+          python -m playwright --version
           python wake.py

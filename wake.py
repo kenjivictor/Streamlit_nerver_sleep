@@ -9,11 +9,11 @@ SITES = [
     "https://tomlepert.streamlit.app/",
 ]
 
-# Mots-clés du bouton
+# Fallback keywords
 KEYWORDS = [
     "yes",
-    "get it",
-    "back up",
+    "get",
+    "back",
     "wake",
     "start",
     "run",
@@ -21,55 +21,56 @@ KEYWORDS = [
     "go",
 ]
 
+# ---- Time logs ----
 now_utc = datetime.now(timezone.utc)
 print(f"Wake Streamlit — {now_utc.isoformat()}")
 
 now_fr = now_utc.astimezone(ZoneInfo("Europe/Paris"))
 print(f"Heure FR : {now_fr.strftime('%Y-%m-%d %H:%M:%S')}")
 
+# ---- Playwright ----
 with sync_playwright() as p:
     browser = p.chromium.launch(headless=True)
     page = browser.new_page()
 
     for url in SITES:
-        print(f"\n Opening {url}")
+        print(f"\nOpening {url}")
 
         try:
-            page.goto(url, wait_until="domcontentloaded", timeout=180_000)
-
-            page.wait_for_timeout(8000)
+            # Streamlit cold start peut être long
+            page.goto(url, wait_until="networkidle", timeout=180_000)
+            page.wait_for_timeout(5000)
 
             clicked = False
 
-            # Trouver un bouton dont le nom matche un mot-clé
-            for kw in KEYWORDS:
-                pattern = re.compile(rf".*{re.escape(kw)}.*", re.IGNORECASE)
-                btn = page.get_by_role("button", name=pattern)
+            # Bouton Streamlit officiel "Wake app"
+            wake_btn = page.locator('button[data-testid="wakeup-button-owner"]')
+            if wake_btn.count() > 0:
+                wake_btn.first.click(timeout=30_000)
+                print("Clicked Streamlit wake button (data-testid)")
+                clicked = True
 
-                if btn.count() > 0:
-                    # clique le premier bouton correspondant
-                    btn.first.click(timeout=30_000)
-                    print(f"Clicked button matching keyword: '{kw}'")
-                    clicked = True
-                    break
-
-            # Si rien trouvé, clique le premier bouton visible
+            # Fallback : recherche par texte
             if not clicked:
-                any_btn = page.locator("button:visible").first
-                if any_btn.count() > 0:
-                    any_btn.click(timeout=30_000)
-                    print("Clicked first visible <button> (fallback)")
-                    clicked = True
-                else:
-                    print("Aucun bouton visible trouvé (peut-être déjà awake ou UI différente).")
+                for kw in KEYWORDS:
+                    pattern = re.compile(rf".*{re.escape(kw)}.*", re.IGNORECASE)
+                    btn = page.get_by_role("button", name=pattern)
+                    if btn.count() > 0:
+                        btn.first.click(timeout=30_000)
+                        print(f"Clicked button matching keyword: '{kw}'")
+                        clicked = True
+                        break
 
-            # Laisser le temps à Streamlit de rerun après clic
+            # Bien trouvé -> log only (pas de clic dangereux)
+            if not clicked:
+                print("Wake button not found (maybe already awake or UI changed).")
+
+            # Laisser Streamlit rerun après clic
             page.wait_for_timeout(6000)
-
             print("Done")
 
         except PlaywrightTimeoutError:
-            print("Timeout Playwright → cold start très probable / app lente")
+            print("Timeout Playwright → cold start très lent / app indisponible")
         except Exception as e:
             print(f"Erreur → {e}")
 
