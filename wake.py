@@ -4,9 +4,7 @@ from zoneinfo import ZoneInfo
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
 SITES = [
-    "https://cinemadelacite.streamlit.app/",
-    "https://byric-f-project-reco-movie-streamlit-app-3pm0kb.streamlit.app/",
-    "https://tomlepert.streamlit.app/",
+    "https://filmdatalab.streamlit.app/",
 ]
 
 # Fallback keywords
