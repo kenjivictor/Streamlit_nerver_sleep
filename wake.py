@@ -5,7 +5,6 @@ from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeo
 
 SITES = [
     "https://filmdatalab.streamlit.app/",
-    "https://filmdatalab-develop.streamlit.app/",
 ]
 
 # Fallback keywords
