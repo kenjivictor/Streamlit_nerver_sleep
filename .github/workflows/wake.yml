@@ -2,11 +2,9 @@ name: Wake Streamlit Apps
 
 on:
   schedule:
-    # été (mars -> octobre) : 10h Paris = 08h UTC
-    - cron: "0 8 * 3-10 *"
+    # 6h Paris = 04h UTC
+    - cron: "0 4 * * *"
 
-    # hiver (novembre -> février) : 10h Paris = 09h UTC
-    - cron: "0 9 * 11,12,1,2 *"
   workflow_dispatch:
 
 jobs:
